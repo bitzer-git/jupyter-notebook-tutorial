@@ -9,6 +9,7 @@ LABEL author="Veit Droege"
 # name your environment and choose python 3.x version
 ARG conda_env=python36
 ARG py_ver=3.6
+ARG py_name="Python 3.6"
 
 # you can add additional libraries you want mamba to install by listing them below the first line and ending with "&& \"
 RUN mamba create --quiet --yes -p "${CONDA_DIR}/envs/${conda_env}" python=${py_ver} ipython ipykernel && \
@@ -23,7 +24,7 @@ RUN mamba create --quiet --yes -p "${CONDA_DIR}/envs/${conda_env}" python=${py_v
 #     mamba clean --all -f -y
 
 # create Python 3.x environment and link it to jupyter
-RUN "${CONDA_DIR}/envs/${conda_env}/bin/python" -m ipykernel install --user --name="${conda_env}" && \
+RUN "${CONDA_DIR}/envs/${conda_env}/bin/python" -m ipykernel install --user --name ${conda_env} --display-name "${py_name}"  && \
     fix-permissions "${CONDA_DIR}" && \
     fix-permissions "/home/${NB_USER}"
 
@@ -35,7 +36,11 @@ RUN "${CONDA_DIR}/envs/${conda_env}/bin/pip" install tensorflow keras tensorflow
 ENV PATH "${CONDA_DIR}/envs/${conda_env}/bin:${PATH}"
 
 # if you want this environment to be the default one, uncomment the following line:
-# ENV CONDA_DEFAULT_ENV ${conda_env}
+#ENV CONDA_DEFAULT_ENV ${conda_env}
 
 # Switch back to jovyan to avoid accidental container runs as root
 USER $NB_UID
+
+# activate new environment
+RUN echo "source activate ${conda_env}" > ~/.bashrc
+
